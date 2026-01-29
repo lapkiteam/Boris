@@ -27,7 +27,7 @@ const ArrayExt = {
   }
 }
 
-/** @typedef {"adequacy" | "inadequacy" | "capitalism" | "tlenost"} CharacteristicName */
+/** @typedef {"healing" | "psycho" | "monster"} CharacteristicName */
 
 const CharacteristicName = {
   /**
@@ -35,10 +35,9 @@ const CharacteristicName = {
    */
   getOrder(name) {
     switch (name) {
-      case "adequacy": return 4
-      case "inadequacy": return 3
-      case "capitalism": return 2
-      case "tlenost": return 1
+      case "monster": return 3 // монстром легче всего стать
+      case "psycho": return 2
+      case "healing": return 1 // вылечиться сложнее всего
       default: return 0
     }
   }
@@ -65,32 +64,29 @@ function getTopCharacteristic(characteristics) {
 function testGetTopCharacteristic() {
   {
     const result = getTopCharacteristic([
-      { name: "adequacy", value: 1 },
-      { name: "tlenost", value: 4 },
-      { name: "capitalism", value: 3 },
-      { name: "inadequacy", value: 2 },
+      { name: "healing", value: 1 },
+      { name: "monster", value: 3 },
+      { name: "psycho", value: 2 },
     ])
-    console.log(result.name === "tlenost" && result.value === 4)
+    console.log(result.name === "monster" && result.value === 3)
   }
 
   {
     const result = getTopCharacteristic([
-      { name: "adequacy", value: 0 },
-      { name: "inadequacy", value: 2 },
-      { name: "capitalism", value: 2 },
-      { name: "tlenost", value: 1 },
+      { name: "healing", value: 0 },
+      { name: "psycho", value: 2 },
+      { name: "monster", value: 2 },
     ])
-    console.log(result.name === "inadequacy" && result.value === 2)
+    console.log(result.name === "monster" && result.value === 2)
   }
 
   {
     const result = getTopCharacteristic([
-      { name: "adequacy", value: 2 },
-      { name: "inadequacy", value: 2 },
-      { name: "capitalism", value: 1 },
-      { name: "tlenost", value: 2 },
+      { name: "healing", value: 2 },
+      { name: "psycho", value: 2 },
+      { name: "monster", value: 1 },
     ])
-    console.log(result.name === "adequacy" && result.value === 2)
+    console.log(result.name === "psycho" && result.value === 2)
   }
 }
 
