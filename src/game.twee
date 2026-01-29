@@ -216,13 +216,20 @@ boris
 
 
 :: Броситься наутек {"position":"800,9400","size":"100,100"}
-$monster
-$psycho
-$healing
-
-<<if $prinestiVodi and $naitiKamni and $prinestiDrov>>\
-  <<goto "Untitled Passage">>
-<</if>>\
+<<nobr>>
+  <<set $result to getTopCharacteristic([
+    { name: "psycho", value: $psycho },
+    { name: "monster", value: $monster },
+    { name: "healing", value: $healing },
+  ])>>
+  <<if $result.name === "psycho">>
+    <<goto "Псих(концовка)">>
+  <<elseif $result.name === "monster">>
+    <<goto "Монстр(концовка)">>
+  <<elseif $result.name === "healing">>
+    <<goto "Исцеление(концовка)">>
+  <</if>>
+<</nobr>>
 
 
 :: Вечер {"position":"700,175","size":"100,100"}
@@ -518,7 +525,7 @@ $healing
 
 
 :: Исцеление(концовка) {"position":"800,9600","size":"100,100"}
-
+И он исцелился, конец.
 
 
 :: Крепко держать курицу {"position":"775,3275","size":"100,100"}
@@ -541,7 +548,7 @@ $healing
 
 
 :: Монстр(концовка) {"position":"500,9600","size":"100,100"}
-
+И он стал монстром, конец.
 
 
 :: Набить пустой желудок {"position":"800,4600","size":"100,100"}
@@ -1127,7 +1134,7 @@ $healing
 
 
 :: Псих(концовка) {"position":"1100,9600","size":"100,100"}
-
+И он стал психом, конец.
 
 
 :: Разбудить шамана {"position":"800,6100","size":"100,100"}
