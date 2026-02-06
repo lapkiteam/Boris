@@ -55,4 +55,4 @@ let toBase64 path =
   |> Clipboard.setText
 
 // convertToWebp()
-toBase64 @"src\images\1769801961.webp"
+toBase64 @"src\images\1769882666.webp"
