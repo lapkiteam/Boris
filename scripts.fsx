@@ -33,8 +33,25 @@ let toBase64 path =
   let base64 =
     File.ReadAllBytes path
     |> System.Convert.ToBase64String
-  let name = Path.GetFileName path
-  $"<img alt=\"{name}\" class=\"float-right\" src=\"data:image/webp;base64,{base64}\">\\"
+  let name = Path.GetFileNameWithoutExtension path
+  let styleName = $"img-{name}"
+  let style =
+    String.concat "\n" [
+      $".{styleName} {{"
+      "  width: 155px;"
+      "  height: 277px;"
+      $"  background-image: url(\"data:image/webp;base64,{base64}\");"
+      "  background-size: contain;"
+      "  background-repeat: no-repeat;"
+      "  display: inline-block;"
+      "}"
+    ]
+  let tag =
+    $"<div class=\"{styleName} float-right\" />\\"
+  String.concat "\n" [
+    style
+    tag
+  ]
   |> Clipboard.setText
 
 // convertToWebp()
