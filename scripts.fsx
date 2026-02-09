@@ -6,28 +6,27 @@ open FsharpMyExtension.IO
 
 let (</>) x y = Path.Combine(x, y)
 
-let convert src dst =
-  let convertPath = @"e:\msys64\mingw64\bin\convert.exe"
-  Proc.startProcSimple convertPath (
-    [$"\"{src}\""; $"\"{dst}\""]
-    |> String.concat " "
-  )
+module ImageMagick =
+  let convert src dst =
+    let convertPath = @"e:\msys64\mingw64\bin\convert.exe"
+    Proc.startProcSimple convertPath (
+      [$"\"{src}\""; $"\"{dst}\""]
+      |> String.concat " "
+    )
 
-let convertToWebp () =
-  let dry = false
-  let dirPath = "src/images"
-  let dir = DirectoryInfo dirPath
-  let files = dir.GetFiles("*.png")
-  files
-  |> Array.iter (fun file ->
-    let srcPath = file.FullName
-    let dstPath =
-      file.DirectoryName </> $"{Path.GetFileNameWithoutExtension srcPath}.webp"
-    printfn "convert %s %s" srcPath dstPath
-    if not dry then
-      convert srcPath dstPath
-      |> printfn "%d"
-  )
+  let convertFolderToWebp dry dirPath =
+    let dir = DirectoryInfo dirPath
+    let files = dir.GetFiles "*.png"
+    files
+    |> Array.iter (fun file ->
+      let srcPath = file.FullName
+      let dstPath =
+        file.DirectoryName </> $"{Path.GetFileNameWithoutExtension srcPath}.webp"
+      printfn "convert %s %s" srcPath dstPath
+      if not dry then
+        convert srcPath dstPath
+        |> printfn "%d"
+    )
 
 type ImageCssRule = {
   Name: string
@@ -69,5 +68,5 @@ let f imagePath =
   ]
   |> Clipboard.setText
 
-// convertToWebp()
+// ImageMagick.convertFolderToWebp false "src/images"
 f @"src\images\bucket-with-potatoes.webp"
