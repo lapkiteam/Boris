@@ -29,30 +29,45 @@ let convertToWebp () =
       |> printfn "%d"
   )
 
-let toBase64 path =
-  let base64 =
-    File.ReadAllBytes path
-    |> System.Convert.ToBase64String
-  let name = Path.GetFileNameWithoutExtension path
-  let styleName = $"img-{name}"
-  let style =
-    String.concat "\n" [
-      $".{styleName} {{"
-      "  width: 155px;"
-      "  height: 277px;"
-      $"  background-image: url(\"data:image/webp;base64,{base64}\");"
-      "  background-size: contain;"
-      "  background-repeat: no-repeat;"
-      "  display: inline-block;"
-      "}"
-    ]
-  let tag =
-    $"<div class=\"{styleName} float-right\" />\\"
+type ImageCssRule = {
+  Name: string
+  Body: string
+}
+[<RequireQualifiedAccess>]
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module ImageCssRule =
+  let createFromFile path =
+    let imageBase64 =
+      File.ReadAllBytes path
+      |> System.Convert.ToBase64String
+    let filename = Path.GetFileNameWithoutExtension path
+    let name = $"img-{filename}"
+    let body =
+      String.concat "\n" [
+        $".{name} {{"
+        "  width: 155px;"
+        "  height: 277px;"
+        $"  background-image: url(\"data:image/webp;base64,{imageBase64}\");"
+        "  background-size: contain;"
+        "  background-repeat: no-repeat;"
+        "  display: inline-block;"
+        "}"
+      ]
+    {
+      Name = name
+      Body = body
+    }
+
+  let createUseHtmlTag (imageStyle: ImageCssRule) =
+    $"<div class=\"{imageStyle.Name} float-right\" />\\"
+
+let f imagePath =
+  let imageCssRule = ImageCssRule.createFromFile imagePath
   String.concat "\n" [
-    style
-    tag
+    imageCssRule.Body
+    ImageCssRule.createUseHtmlTag imageCssRule
   ]
   |> Clipboard.setText
 
 // convertToWebp()
-toBase64 @"src\images\bucket-with-potatoes.webp"
+f @"src\images\bucket-with-potatoes.webp"
