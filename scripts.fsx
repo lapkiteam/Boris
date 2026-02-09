@@ -1,5 +1,6 @@
 #!/usr/bin/env -S dotnet fsi
 #r "nuget: FSharpMyExt, 2.0.0-prerelease.9"
+open System
 open System.IO
 open FsharpMyExtension
 open FsharpMyExtension.IO
@@ -8,7 +9,10 @@ let (</>) x y = Path.Combine(x, y)
 
 module ImageMagick =
   let convert src dst =
-    let convertPath = @"e:\msys64\mingw64\bin\convert.exe"
+    let convertPath =
+      match Environment.OSVersion.Platform with
+      | PlatformID.Unix -> "convert"
+      | _ -> @"e:\msys64\mingw64\bin\convert.exe"
     Proc.startProcSimple convertPath (
       [$"\"{src}\""; $"\"{dst}\""]
       |> String.concat " "
@@ -69,4 +73,4 @@ let f imagePath =
   |> Clipboard.setText
 
 // ImageMagick.convertFolderToWebp false "src/images"
-f @"src\images\bucket-with-potatoes.webp"
+f @"src/images/bucket-with-potatoes.webp"
