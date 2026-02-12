@@ -1,9 +1,11 @@
 #!/usr/bin/env -S dotnet fsi
 #r "nuget: FSharpMyExt, 2.0.0-prerelease.9"
+#load "scripts/TweeApi.fsx"
 open System
 open System.IO
 open FsharpMyExtension
 open FsharpMyExtension.IO
+open FsharpMyExtension.Containers
 
 let (</>) x y = Path.Combine(x, y)
 
@@ -64,13 +66,37 @@ module ImageCssRule =
   let createUseHtmlTag (imageStyle: ImageCssRule) =
     $"<div class=\"{imageStyle.Name} float-right\" />\\"
 
-let f imagePath =
-  let imageCssRule = ImageCssRule.createFromFile imagePath
-  String.concat "\n" [
-    imageCssRule.Body
-    ImageCssRule.createUseHtmlTag imageCssRule
-  ]
-  |> Clipboard.setText
+let appendStyleRuleToStylesheet (styleRule: ImageCssRule) (twee: TweeApi.Document) =
+  twee
+  |> TweeApi.Document.updatePassage "StoryStylesheet [stylesheet]" (fun passage ->
+    { passage with
+        Body =
+          List.append passage.Body [styleRule.Body]
+    }
+  )
+
+let useImageInTopPassage passageName (styleRule: ImageCssRule) twee =
+  twee
+  |> TweeApi.Document.updatePassage passageName (fun passage ->
+    { passage with
+        Body =
+          let htmlTag = ImageCssRule.createUseHtmlTag styleRule
+          $"{htmlTag}\\"::passage.Body
+    }
+  )
+
+let f imagePath passageName =
+  let gamePath = "src" </> "game.twee"
+  Result.builder {
+    let imageCssRule = ImageCssRule.createFromFile imagePath
+    let! twee = TweeApi.Document.parseFile gamePath
+    let twee = appendStyleRuleToStylesheet imageCssRule twee
+    let twee = useImageInTopPassage passageName imageCssRule twee
+    let rawTwee = TweeApi.Document.toString TweeApi.NewlineType.Lf twee
+    IO.File.WriteAllText(gamePath, rawTwee)
+    return ()
+  }
 
 // ImageMagick.convertFolderToWebp false "src/images"
-f @"src/images/bucket-with-potatoes.webp"
+f @"src/images/1769360965.webp" "Сбежать от мужичка {\"position\":\"700,1850\",\"size\":\"100,100\"}"
+|> printfn "%A"
