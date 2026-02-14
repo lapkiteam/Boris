@@ -93,20 +93,42 @@ let useImageInTopPassage passageName (styleRule: ImageCssRule) twee =
     }
   )
 
-let f imagePath passageName =
+let addImage imageName passageName =
   let gamePath = "src" </> "game.twee"
   Result.builder {
+    let imagePath = @"src" </> "images" </> imageName + ".webp"
     let imageCssRule = ImageCssRule.createFromFile imagePath
     let! twee = Twee.FSharp.Document.parseFile gamePath
     let twee = appendStyleRuleToStylesheet imageCssRule twee
-    let twee = useImageInTopPassage passageName imageCssRule twee
-    let rawTwee = Twee.FSharp.Document.toString Twee.FSharp.NewlineType.Lf twee
+    let twee =
+      twee
+      |> useImageInTopPassage
+        (fun passage -> passage.Header.Name = passageName)
+        imageCssRule
+    let newlineType = Twee.FSharp.NewlineType.Lf
+    let rawTwee = Twee.FSharp.Document.toString newlineType twee
+    let rawTwee = $"{rawTwee}{Twee.FSharp.NewlineType.toString newlineType}"
     IO.File.WriteAllText(gamePath, rawTwee)
     return ()
   }
+  |> printfn "%A"
 
 // ImageMagick.convertFolderToWebp false "src/images"
-f
-  @"src/images/1769360965.webp"
-  (fun passage -> passage.Header.Name = "Сбежать от мужичка")
-|> printfn "%A"
+
+let addImages () =
+  addImage "pentagram" "Спуститься за старушкой" // 1769298905
+  addImage "1769360965" "Сбежать от мужичка"
+  addImage "1769456633" "Искать бабулю"
+  addImage "1769477722" "Наблюдать за бабулей"
+  addImage "1769547712" "Отправиться в лес"
+  addImage "1769555303" "Пойти за мужичком"
+  addImage "1769626842" "Посмотреть, что там"
+  addImage "1769627225" "Принести дров"
+  addImage "1769709272" "Найти церковь"
+  addImage "1769724226" "Сесть на ближайшую могилу"
+  addImage "1769793840" "Дождаться ночи"
+  addImage "1769797475" "Отправиться домой"
+  addImage "1769801961" "Войти внутрь дома и Зайти"
+  addImage "1769882666" "Присмотреться"
+  addImage "bucket-with-potatoes" "Продрать очи" // 1769706858
+
