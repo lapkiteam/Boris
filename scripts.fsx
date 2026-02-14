@@ -280,8 +280,8 @@ module Achievements =
   //   )
   //   |> printfn "%A"
 
-  do
-    updateTwee (addAllUseTags achievements)
-    |> printfn "%A"
+  // do
+  //   updateTwee (addAllUseTags achievements)
+  //   |> printfn "%A"
 
   // ImageMagick.convertFolderToWebp false "src/achievement-images"
