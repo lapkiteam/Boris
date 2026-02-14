@@ -246,14 +246,14 @@ boris
 
 :: AchievementsInit [script]
 const defaultAchievements = () => ({
-  "Есть контакт": true, // todo: заменить на false
-  "Крушитель": true,
-  "Спасатель курочки": true,
-  "Первая кровь": true,
-  "Спасатель зайчика": true,
-  "Исцеление": true,
-  "Монстр": true,
-  "Псих": true,
+  "Есть контакт": false,
+  "Крушитель": false,
+  "Спасатель курочки": false,
+  "Первая кровь": false,
+  "Спасатель зайчика": false,
+  "Исцеление": false,
+  "Монстр": false,
+  "Псих": false,
 })
 
 setup.achievementDescriptions = {

@@ -181,7 +181,7 @@ module Achievements =
     let createField achievementName =
       showField
         (showQuotes (showString achievementName))
-        (showString "true")
+        (showString "false")
     [
       showString "const defaultAchievements = () => ({"
       yield!
