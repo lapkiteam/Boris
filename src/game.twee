@@ -243,74 +243,74 @@ boris
 <<set $psycho to 0>>
 <<set $healing to 0>>
 
-<<script>>
-  const defaultAchievements = () => ({
-    "Есть контакт": true,
-    "Крушитель": true,
-    "Спасатель курочки": true,
-    "Первая кровь": true,
-    "Спасатель зайчика": true,
-    "Исцеление": true,
-    "Монстр": true,
-    "Псих": true,
-  })
 
-  setup.achievementDescriptions = {
-    "Есть контакт": {
-      name: "Есть контакт",
-      desc: "",
-    },
-    "Крушитель": {
-      name: "Крушитель",
-      desc: "",
-    },
-    "Спасатель курочки": {
-      name: "Спасатель курочки",
-      desc: "",
-    },
-    "Первая кровь": {
-      name: "Первая кровь",
-      desc: "",
-    },
-    "Спасатель зайчика": {
-      name: "Спасатель зайчика",
-      desc: "",
-    },
-    "Исцеление": {
-      name: "Исцеление",
-      desc: "",
-    },
-    "Монстр": {
-      name: "Монстр",
-      desc: "",
-    },
-    "Псих": {
-      name: "Псих",
-      desc: "",
-    },
-  }
+:: AchievementsInit [script]
+const defaultAchievements = () => ({
+  "Есть контакт": true, // todo: заменить на false
+  "Крушитель": true,
+  "Спасатель курочки": true,
+  "Первая кровь": true,
+  "Спасатель зайчика": true,
+  "Исцеление": true,
+  "Монстр": true,
+  "Псих": true,
+})
 
-  setup.achievements = recall("achievements", defaultAchievements())
+setup.achievementDescriptions = {
+  "Есть контакт": {
+    name: "Есть контакт",
+    desc: "",
+  },
+  "Крушитель": {
+    name: "Крушитель",
+    desc: "",
+  },
+  "Спасатель курочки": {
+    name: "Спасатель курочки",
+    desc: "",
+  },
+  "Первая кровь": {
+    name: "Первая кровь",
+    desc: "",
+  },
+  "Спасатель зайчика": {
+    name: "Спасатель зайчика",
+    desc: "",
+  },
+  "Исцеление": {
+    name: "Исцеление",
+    desc: "",
+  },
+  "Монстр": {
+    name: "Монстр",
+    desc: "",
+  },
+  "Псих": {
+    name: "Псих",
+    desc: "",
+  },
+}
 
-  setup.unlock = function(id) {
-    const isAchievementEarned = setup.achievements[id]
-    if (isAchievementEarned) return
-    setup.achievements[id] = true
-    memorize("achievements", setup.achievements)
-  };
+setup.achievements = recall("achievements", defaultAchievements())
 
-  setup.resetAchievements = function() {
-    setup.achievements = defaultAchievements()
-    forget("achievements")
-  }
+setup.unlock = function(id) {
+  const isAchievementEarned = setup.achievements[id]
+  if (isAchievementEarned) return
+  setup.achievements[id] = true
+  memorize("achievements", setup.achievements)
+};
 
-  setup.showAchievement = function(id) {
-    const ach = setup.achievementDescriptions[id]
-    Dialog.setup(ach.name)
-    Dialog.wiki(ach.desc)
-    Dialog.open()
-  }
-<</script>>
+setup.resetAchievements = function() {
+  setup.achievements = defaultAchievements()
+  forget("achievements")
+}
+
+setup.showAchievement = function(id) {
+  const ach = setup.achievementDescriptions[id]
+  Dialog.setup(ach.name)
+  Dialog.wiki(ach.desc)
+  Dialog.open()
+}
 
 
 :: Untitled Passage {"position":"800,5700","size":"100,100"}
