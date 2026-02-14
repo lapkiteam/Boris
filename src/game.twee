@@ -313,6 +313,109 @@ setup.showAchievement = function(id) {
 }
 
 
+:: ModalScript [script]
+// @ts-check
+
+/**
+ * @param {string} [message]
+ * @param {() => void} [onYes]
+ * @param {() => void} [onNo]
+ */
+function Modal(message, onYes, onNo) {
+  /**
+   * @param {HTMLElement | HTMLStyleElement } root
+   */
+  function dispose(root) {
+    root.childNodes.forEach(node => {
+      if (node instanceof HTMLElement || node instanceof HTMLStyleElement) {
+        dispose(node)
+      }
+    })
+    root.remove()
+  }
+
+  const modal = document.createElement("div")
+  modal.className = "modal"
+
+  const content = document.createElement("div")
+  content.className = "modal__content"
+  modal.appendChild(content)
+
+  const text = document.createElement("p")
+  text.textContent = message ? message : "Вы уверены?"
+  content.appendChild(text)
+
+  const btnYes = document.createElement("button")
+  btnYes.className = "modal-content__button modal-content__button--yes"
+  btnYes.textContent = "Да"
+  btnYes.onclick = () => {
+    dispose(modal)
+    if (typeof onYes === "function") onYes()
+  }
+  content.appendChild(btnYes)
+
+  const btnNo = document.createElement("button")
+  btnNo.className = "modal-content__button"
+  btnNo.onclick = () => {
+    dispose(modal)
+    if (typeof onNo === "function") onNo()
+  }
+  btnNo.textContent = "Нет"
+  content.appendChild(btnNo)
+
+  const background = document.createElement("div")
+  background.className = "modal__background"
+  background.onclick = () => {
+    dispose(modal)
+    if (typeof onNo === "function") onNo()
+  }
+  modal.appendChild(background)
+
+  const body = document.querySelector("body")
+  body?.appendChild(modal)
+
+  btnNo.focus()
+}
+
+setup.Modal = Modal
+
+
+:: ModalStyle [stylesheet]
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal__content {
+  background: #111111;
+  padding: 1.5rem;
+  border-color: #444;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 8px;
+  max-width: 90%;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9000;
+}
+.modal-content__button {
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+.modal-content__button--yes {
+  background-color: red;
+}
+.modal__background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+
 :: StoryMenu
 [[Достижения]]
 
@@ -334,8 +437,8 @@ setup.showAchievement = function(id) {
 <</nobr>>\
 
 * <<link "Сбросить достижения">>
-  <<run Modal(
-    "Ты точно хочешь сбросить все достижения?",
+  <<run setup.Modal(
+    "Вы точно хотите сбросить все достижения?",
     () => {
       setup.resetAchievements()
       Engine.show() // update current passage
