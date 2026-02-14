@@ -1,6 +1,6 @@
 #!/usr/bin/env -S dotnet fsi
 #r "nuget: FSharpMyExt, 2.0.0-prerelease.9"
-#load "scripts/TweeApi.fsx"
+#r "nuget: Twee.FSharp, 0.2.2"
 open System
 open System.IO
 open FsharpMyExtension
@@ -64,20 +64,28 @@ module ImageCssRule =
     }
 
   let createUseHtmlTag (imageStyle: ImageCssRule) =
-    $"<div class=\"{imageStyle.Name} float-right\" />\\"
+    $"<div class=\"{imageStyle.Name} float-right\" />"
 
-let appendStyleRuleToStylesheet (styleRule: ImageCssRule) (twee: TweeApi.Document) =
+let appendStyleRuleToStylesheet (styleRule: ImageCssRule) (twee: Twee.FSharp.Document) =
   twee
-  |> TweeApi.Document.updatePassage "StoryStylesheet [stylesheet]" (fun passage ->
-    { passage with
-        Body =
-          List.append passage.Body [styleRule.Body]
-    }
-  )
+  |> Twee.FSharp.Document.updatePassage
+    (fun passage ->
+      let header = passage.Header
+      match header.Tags with
+      | None -> false
+      | Some tags ->
+        header.Name = "StoryStylesheet" && Set.contains "stylesheet" tags
+    )
+    (fun passage ->
+      { passage with
+          Body =
+            List.append passage.Body [styleRule.Body]
+      }
+    )
 
 let useImageInTopPassage passageName (styleRule: ImageCssRule) twee =
   twee
-  |> TweeApi.Document.updatePassage passageName (fun passage ->
+  |> Twee.FSharp.Document.updatePassage passageName (fun passage ->
     { passage with
         Body =
           let htmlTag = ImageCssRule.createUseHtmlTag styleRule
@@ -89,14 +97,16 @@ let f imagePath passageName =
   let gamePath = "src" </> "game.twee"
   Result.builder {
     let imageCssRule = ImageCssRule.createFromFile imagePath
-    let! twee = TweeApi.Document.parseFile gamePath
+    let! twee = Twee.FSharp.Document.parseFile gamePath
     let twee = appendStyleRuleToStylesheet imageCssRule twee
     let twee = useImageInTopPassage passageName imageCssRule twee
-    let rawTwee = TweeApi.Document.toString TweeApi.NewlineType.Lf twee
+    let rawTwee = Twee.FSharp.Document.toString Twee.FSharp.NewlineType.Lf twee
     IO.File.WriteAllText(gamePath, rawTwee)
     return ()
   }
 
 // ImageMagick.convertFolderToWebp false "src/images"
-f @"src/images/1769360965.webp" "Сбежать от мужичка {\"position\":\"700,1850\",\"size\":\"100,100\"}"
+f
+  @"src/images/1769360965.webp"
+  (fun passage -> passage.Header.Name = "Сбежать от мужичка")
 |> printfn "%A"
