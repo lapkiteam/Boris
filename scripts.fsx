@@ -246,6 +246,22 @@ module Achievements =
       "<</link>>!"
     ]
 
+  let addAllUseTags achievements twee =
+    achievements
+    |> List.fold
+      (fun twee achiev ->
+        let tag = createUseTag achiev
+        twee
+        |> Twee.FSharp.Document.updatePassageByName
+          achiev.PassageName
+          (fun passage ->
+            { passage with
+                Body = passage.Body @ [tag]
+            }
+          )
+      )
+      twee
+
   let achievements =
     [
       Achievement.create "Есть контакт"      "Сдаться чарам девушки"        "151ea21b-d705-4e94-aef4-01cafd683c1f" "549112654-151ea21b-d705-4e94-aef4-01cafd683c1f"
@@ -264,5 +280,8 @@ module Achievements =
   //   )
   //   |> printfn "%A"
 
+  do
+    updateTwee (addAllUseTags achievements)
+    |> printfn "%A"
 
   // ImageMagick.convertFolderToWebp false "src/achievement-images"
