@@ -132,3 +132,16 @@ let addImages () =
   addImage "1769882666" "Присмотреться"
   addImage "bucket-with-potatoes" "Продрать очи" // 1769706858
 
+let addAchievements () =
+  let create achievementName passageName achievementGitHubImagePath achievementImagePath =
+    todo
+  [
+    create "Есть контакт"      "Сдаться чарам девушки"        "151ea21b-d705-4e94-aef4-01cafd683c1f" "549112654-151ea21b-d705-4e94-aef4-01cafd683c1f"
+    create "Крушитель"         "Выломать дверь"               "f506f819-c35e-45c9-a6df-e2dcf330f11a" "549112688-f506f819-c35e-45c9-a6df-e2dcf330f11a"
+    create "Спасатель курочки" "Отпустить курицу"             "17991d3a-b2d2-4ec5-9c86-0986a06b9a49" "549112727-17991d3a-b2d2-4ec5-9c86-0986a06b9a49"
+    create "Первая кровь"      "Выпить кровь курицы"          "31a415d8-434f-4ab7-9094-1afac56a5595" "549112826-31a415d8-434f-4ab7-9094-1afac56a5595"
+    create "Спасатель зайчика" "Освободить зайчика и убежать" "cbcac3f6-2d65-4d43-9589-22dd71c6e35b" "549112883-cbcac3f6-2d65-4d43-9589-22dd71c6e35b"
+    create "Исцеление"         "Концовка исцеление"           "287c9124-4b44-4048-8498-fe3cc527294d" "549112925-287c9124-4b44-4048-8498-fe3cc527294d"
+    create "Монстр"            "Концовка монстр"              "d1b89dc9-f03f-4200-8822-6d3ffda7116e" "549112983-d1b89dc9-f03f-4200-8822-6d3ffda7116e"
+    create "Псих"              "Концовка псих"                "5d2042c6-a526-40d2-9f8b-16ed9e620cf2" "549113060-5d2042c6-a526-40d2-9f8b-16ed9e620cf2"
+  ]
