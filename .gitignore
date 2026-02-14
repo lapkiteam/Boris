@@ -1,3 +1,4 @@
 /.vite
 /index.html
 /src/images/*.webp
+/src/achievement-images/*.webp

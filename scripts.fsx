@@ -132,9 +132,11 @@ let addImages () =
   addImage "1769882666" "Присмотреться"
   addImage "bucket-with-potatoes" "Продрать очи" // 1769706858
 
+ImageMagick.convertFolderToWebp false "src/achievement-images"
+
 let addAchievements () =
   let create achievementName passageName achievementGitHubImagePath achievementImagePath =
-    todo
+    failwith "todo"
   [
     create "Есть контакт"      "Сдаться чарам девушки"        "151ea21b-d705-4e94-aef4-01cafd683c1f" "549112654-151ea21b-d705-4e94-aef4-01cafd683c1f"
     create "Крушитель"         "Выломать дверь"               "f506f819-c35e-45c9-a6df-e2dcf330f11a" "549112688-f506f819-c35e-45c9-a6df-e2dcf330f11a"
