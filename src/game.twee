@@ -510,7 +510,7 @@ setup.Modal = Modal
     <<for _id, _achEarned range setup.achievements>>
       <<set _ach to setup.achievementDescriptions[_id]>>
       <<if _achEarned>>
-        <li>✅ ''_ach.name'' – _ach.desc</li>
+        <li>✅ <<= '<span class="' + _ach.imageStyle + '"></span>'>> ''_ach.name'' – _ach.desc</li>
       <<else>>
         <li>⬜️ _ach.name</li>
       <</if>>
