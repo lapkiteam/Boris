@@ -1,6 +1,6 @@
 #!/usr/bin/env -S dotnet fsi
 #r "nuget: FSharpMyExt, 2.0.0-prerelease.9"
-#r "nuget: Twee.FSharp, 0.2.2"
+#r "nuget: Twee.FSharp, 0.3.0"
 open System
 open System.IO
 open FsharpMyExtension
@@ -71,30 +71,46 @@ module ImageCssRule =
 
 let appendStyleRuleToStylesheet (styleRule: ImageCssRule) (twee: Twee.FSharp.Document) =
   twee
-  |> Twee.FSharp.Document.updatePassage
+  |> Twee.FSharp.Document.updatePassages
     (fun passage ->
-      let header = passage.Header
-      match header.Tags with
-      | None -> false
-      | Some tags ->
-        header.Name = "StoryStylesheet" && Set.contains "stylesheet" tags
+      let test (passage: Twee.FSharp.Passage) =
+        let header = passage.Header
+        match header.Tags with
+        | None -> false
+        | Some tags ->
+          header.Name = "StoryStylesheet" && Set.contains "stylesheet" tags
+      if not <| test passage then
+        None
+      else
+        { passage with
+            Body =
+              List.append passage.Body [styleRule.Body]
+        }
+        |> Some
     )
-    (fun passage ->
-      { passage with
-          Body =
-            List.append passage.Body [styleRule.Body]
-      }
-    )
+  |> fun (twee, updatedPassagesCount) ->
+    if updatedPassagesCount = 0 then
+      failwith "'StoryStylesheet [stylesheet]' passage not found"
+    twee
 
 let useImageInTopPassage passageName (styleRule: ImageCssRule) twee =
   twee
-  |> Twee.FSharp.Document.updatePassage passageName (fun passage ->
-    { passage with
-        Body =
-          let htmlTag = ImageCssRule.createUseHtmlTag styleRule
-          $"{htmlTag}\\"::passage.Body
-    }
+  |> Twee.FSharp.Document.updatePassages
+    (fun passage ->
+      if not (passage.Header.Name = passageName) then
+        None
+      else
+        { passage with
+            Body =
+              let htmlTag = ImageCssRule.createUseHtmlTag styleRule
+              $"{htmlTag}\\"::passage.Body
+        }
+        |> Some
   )
+  |> fun (twee, updatedPassagesCount) ->
+    if updatedPassagesCount = 0 then
+      failwithf "'%s' passage not found" passageName
+    twee
 
 let updateTwee update =
   Result.builder {
@@ -113,9 +129,7 @@ let addImage imageName passageName =
     let twee = appendStyleRuleToStylesheet imageCssRule twee
     let twee =
       twee
-      |> useImageInTopPassage
-        (fun passage -> passage.Header.Name = passageName)
-        imageCssRule
+      |> useImageInTopPassage passageName imageCssRule
     twee
   )
   |> printfn "%A"
@@ -216,27 +230,33 @@ module Achievements =
     ]
 
   let addInit achievements (twee: Twee.FSharp.Document) =
+    let storyInitName = "StoryInit"
     twee
-    |> Twee.FSharp.Document.updatePassage
+    |> Twee.FSharp.Document.updatePassages
       (fun passage ->
-        passage.Header.Name = "StoryInit"
+        if not (passage.Header.Name = storyInitName) then
+          None
+        else
+          { passage with
+              Body =
+                passage.Body
+                |> List.collect (fun line ->
+                  if not <| line.Contains "// todo: добавить инициализацию достижений" then
+                    [line]
+                  else
+                    [
+                      yield! createDefaultAchievements achievements |> showBlock |> List.map show
+                      ""
+                      yield! createAchievementDescriptions achievements |> showBlock |> List.map show
+                    ]
+                )
+          }
+          |> Some
       )
-      (fun passage ->
-        { passage with
-            Body =
-              passage.Body
-              |> List.collect (fun line ->
-                if not <| line.Contains "// todo: добавить инициализацию достижений" then
-                  [line]
-                else
-                  [
-                    yield! createDefaultAchievements achievements |> showBlock |> List.map show
-                    ""
-                    yield! createAchievementDescriptions achievements |> showBlock |> List.map show
-                  ]
-              )
-        }
-      )
+    |> fun (twee, updatedPassagesCount) ->
+      if updatedPassagesCount = 0 then
+        failwithf "'%s' passage not found" storyInitName
+      twee
 
   let createUseTag { Name = achievementName } =
     String.concat "\n" [
@@ -251,14 +271,21 @@ module Achievements =
     |> List.fold
       (fun twee achiev ->
         let tag = createUseTag achiev
+        let twee, updatedPassagesCount =
+          twee
+          |> Twee.FSharp.Document.updatePassages
+            (fun passage ->
+              if not (passage.Header.Name = achiev.PassageName) then
+                None
+              else
+                { passage with
+                    Body = passage.Body @ [tag]
+                }
+                |> Some
+            )
+        if updatedPassagesCount = 0 then
+          failwithf "'%A' passage not found" achiev.PassageName
         twee
-        |> Twee.FSharp.Document.updatePassageByName
-          achiev.PassageName
-          (fun passage ->
-            { passage with
-                Body = passage.Body @ [tag]
-            }
-          )
       )
       twee
 
