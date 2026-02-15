@@ -10,6 +10,7 @@ open FsharpMyExtension.Containers
 let (</>) x y = Path.Combine(x, y)
 
 let gamePath = "src" </> "game.twee"
+let achievementImagesPath = "assets" </> "images" </> "achievements"
 let newlineType = Twee.FSharp.NewlineType.Lf
 
 module ImageMagick =
@@ -22,6 +23,19 @@ module ImageMagick =
       [$"\"{src}\""; $"\"{dst}\""]
       |> String.concat " "
     )
+
+  open FParsec
+  open FsharpMyExtension.Serialization.Deserializers.FParsec
+
+  let size (image: string) =
+    let statusCode, stdout =
+      Proc.startProcString "identify"
+        $"-ping -format \"%%w %%h\" \"{image}\""
+    if statusCode <> 0 then
+      Result.Error "Some error in identify" // todo: add stderror
+    else
+      let p = pint32 .>> spaces .>>. pint32
+      runResult p stdout
 
   let convertFolderToWebp dry dirPath =
     let dir = DirectoryInfo dirPath
@@ -45,6 +59,11 @@ type ImageCssRule = {
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ImageCssRule =
   let createFromFile path =
+    let width, height =
+      ImageMagick.size path
+      |> Result.defaultWith (
+        failwithf "%A"
+      )
     let imageBase64 =
       File.ReadAllBytes path
       |> System.Convert.ToBase64String
@@ -53,8 +72,8 @@ module ImageCssRule =
     let body =
       String.concat "\n" [
         $".{name} {{"
-        "  width: 155px;"
-        "  height: 277px;"
+        $"  width: {width}px;"
+        $"  height: {height}px;"
         $"  background-image: url(\"data:image/webp;base64,{imageBase64}\");"
         "  background-size: contain;"
         "  background-repeat: no-repeat;"
@@ -161,7 +180,7 @@ module Achievements =
     Name: string
     Description: string option
     GitHubImagePath: string
-    ImagePath: string
+    ImageFilenameWithoutExt: string
     PassageName: string
   }
 
@@ -173,7 +192,7 @@ module Achievements =
         Name = achievementName
         PassageName = passageName
         GitHubImagePath = achievementGitHubImagePath
-        ImagePath = achievementImagePath
+        ImageFilenameWithoutExt = achievementImagePath
         Description = Some achievementDescription
       }
 
@@ -207,13 +226,14 @@ module Achievements =
     ]
 
   let createAchievementDescriptions (achievements: Achievement list) =
-    let createField { Name = name; Description = description} =
+    let createField { Name = name; Description = description; ImageFilenameWithoutExt = imageFilenameWithoutExt} =
       [
         showQuotes (showString name) << showString ": {"
         yield!
           [
             showField (showString "name") (showQuotes (showString name))
             showField (showString "desc") (showQuotes (showString (Option.defaultValue "" description)))
+            showField (showString "imageStyle") (showQuotes (showString $"img-{imageFilenameWithoutExt}"))
           ]
           |> showBlock
         showString "},"
@@ -239,17 +259,11 @@ module Achievements =
         else
           { passage with
               Body =
-                passage.Body
-                |> List.collect (fun line ->
-                  if not <| line.Contains "// todo: добавить инициализацию достижений" then
-                    [line]
-                  else
-                    [
-                      yield! createDefaultAchievements achievements |> List.map show
-                      ""
-                      yield! createAchievementDescriptions achievements |> List.map show
-                    ]
-                )
+                [
+                  yield! createDefaultAchievements achievements |> List.map show
+                  ""
+                  yield! createAchievementDescriptions achievements |> List.map show
+                ]
           }
           |> Some
       )
@@ -301,14 +315,53 @@ module Achievements =
       Achievement.create "Псих"              "Псих(концовка)"               "5d2042c6-a526-40d2-9f8b-16ed9e620cf2" "549113060-5d2042c6-a526-40d2-9f8b-16ed9e620cf2" "Ты старался как мог, но обстоятельства были выше и сломали тебя."
     ]
 
-  // do
-  //   updateTwee (fun twee ->
-  //     addInit achievements twee
-  //   )
-  //   |> printfn "%A"
+  let addAchievementImagesToStyle () =
+    let appendStyleRuleToStylesheet (styleRule: ImageCssRule) (twee: Twee.FSharp.Document) =
+      twee
+      |> Twee.FSharp.Document.updatePassages (fun passage ->
+        let test (passage: Twee.FSharp.Passage) =
+          let header = passage.Header
+          match header.Tags with
+          | None -> false
+          | Some tags ->
+            header.Name = "AchievementImages" && Set.contains "stylesheet" tags
+        if not <| test passage then
+          None
+        else
+          { passage with
+              Body =
+                List.append passage.Body [styleRule.Body]
+          }
+          |> Some
+      )
+      |> fun (twee, updatedPassagesCount) ->
+        if updatedPassagesCount = 0 then
+          failwithf "'AchievementImages [stylesheet]' passage not found"
+        twee
+
+    updateTwee (fun twee ->
+      achievements
+      |> List.fold
+        (fun twee achiev ->
+          let imageName = achiev.ImageFilenameWithoutExt
+          let imagePath = achievementImagesPath </> imageName + ".webp"
+          let imageCssRule = ImageCssRule.createFromFile imagePath
+          let twee = appendStyleRuleToStylesheet imageCssRule twee
+          twee
+        )
+        twee
+    )
+    |> printfn "%A"
+
+  do
+    updateTwee (fun twee ->
+      addInit achievements twee
+    )
+    |> printfn "%A"
 
   // do
   //   updateTwee (addAllUseTags achievements)
   //   |> printfn "%A"
 
-  // ImageMagick.convertFolderToWebp false "src/achievement-images"
+  // ImageMagick.convertFolderToWebp false achievementImagesPath
+
