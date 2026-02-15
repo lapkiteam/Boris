@@ -23,6 +23,19 @@ module ImageMagick =
       |> String.concat " "
     )
 
+  open FParsec
+  open FsharpMyExtension.Serialization.Deserializers.FParsec
+
+  let size (image: string) =
+    let statusCode, stdout =
+      Proc.startProcString "identify"
+        $"-ping -format \"%%w %%h\" \"{image}\""
+    if statusCode <> 0 then
+      Result.Error "Some error in identify" // todo: add stderror
+    else
+      let p = pint32 .>> spaces .>>. pint32
+      runResult p stdout
+
   let convertFolderToWebp dry dirPath =
     let dir = DirectoryInfo dirPath
     let files = dir.GetFiles "*.png"
@@ -45,6 +58,11 @@ type ImageCssRule = {
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ImageCssRule =
   let createFromFile path =
+    let width, height =
+      ImageMagick.size path
+      |> Result.defaultWith (
+        failwithf "%A"
+      )
     let imageBase64 =
       File.ReadAllBytes path
       |> System.Convert.ToBase64String
@@ -53,8 +71,8 @@ module ImageCssRule =
     let body =
       String.concat "\n" [
         $".{name} {{"
-        "  width: 155px;"
-        "  height: 277px;"
+        $"  width: {width}px;"
+        $"  height: {height}px;"
         $"  background-image: url(\"data:image/webp;base64,{imageBase64}\");"
         "  background-size: contain;"
         "  background-repeat: no-repeat;"
