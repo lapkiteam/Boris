@@ -329,7 +329,8 @@ module Achievements =
   //   updateTwee (addAllUseTags achievements)
   //   |> printfn "%A"
 
-  // ImageMagick.convertFolderToWebp false "src/achievement-images"
+  let achievementImagesPath = "assets" </> "images" </> "achievements"
+  // ImageMagick.convertFolderToWebp false achievementImagesPath
   do
     let appendStyleRuleToStylesheet (styleRule: ImageCssRule) (twee: Twee.FSharp.Document) =
       twee
@@ -359,7 +360,7 @@ module Achievements =
       |> List.fold
         (fun twee achiev ->
           let imageName = achiev.ImageFilenameWithoutExt
-          let imagePath = @"src" </> "achievement-images" </> imageName + ".webp"
+          let imagePath = achievementImagesPath </> imageName + ".webp"
           let imageCssRule = ImageCssRule.createFromFile imagePath
           let twee = appendStyleRuleToStylesheet imageCssRule twee
           twee
@@ -367,6 +368,7 @@ module Achievements =
         twee
     )
     |> printfn "%A"
-    // ImageMagick.size "src/achievement-images/549112925-287c9124-4b44-4048-8498-fe3cc527294d.webp"
+
+    // ImageMagick.size (achievementImagesPath </> "549112925-287c9124-4b44-4048-8498-fe3cc527294d.webp")
     // |> printfn "%A"
     ()
