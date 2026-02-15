@@ -313,6 +313,9 @@ setup.showAchievement = function(id) {
 }
 
 
+:: AchievementImages [stylesheet]
+
+
 :: ModalScript [script]
 // @ts-check
 

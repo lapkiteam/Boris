@@ -165,7 +165,7 @@ module Achievements =
     Name: string
     Description: string option
     GitHubImagePath: string
-    ImagePath: string
+    ImageFilenameWithoutExt: string
     PassageName: string
   }
 
@@ -177,7 +177,7 @@ module Achievements =
         Name = achievementName
         PassageName = passageName
         GitHubImagePath = achievementGitHubImagePath
-        ImagePath = achievementImagePath
+        ImageFilenameWithoutExt = achievementImagePath
         Description = None
       }
 
@@ -303,3 +303,37 @@ module Achievements =
   //   |> printfn "%A"
 
   // ImageMagick.convertFolderToWebp false "src/achievement-images"
+  do
+    let appendStyleRuleToStylesheet (styleRule: ImageCssRule) (twee: Twee.FSharp.Document) =
+      twee
+      |> Twee.FSharp.Document.updatePassage
+        (fun passage ->
+          let header = passage.Header
+          match header.Tags with
+          | None -> false
+          | Some tags ->
+            header.Name = "AchievementImages" && Set.contains "stylesheet" tags
+        )
+        (fun passage ->
+          { passage with
+              Body =
+                List.append passage.Body [styleRule.Body]
+          }
+        )
+
+    updateTwee (fun twee ->
+      achievements
+      |> List.fold
+        (fun twee achiev ->
+          let imageName = achiev.ImageFilenameWithoutExt
+          let imagePath = @"src" </> "achievement-images" </> imageName + ".webp"
+          let imageCssRule = ImageCssRule.createFromFile imagePath
+          let twee = appendStyleRuleToStylesheet imageCssRule twee
+          twee
+        )
+        twee
+    )
+    |> printfn "%A"
+    // ImageMagick.size "src/achievement-images/549112925-287c9124-4b44-4048-8498-fe3cc527294d.webp"
+    // |> printfn "%A"
+    ()
