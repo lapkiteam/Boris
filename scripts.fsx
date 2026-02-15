@@ -10,6 +10,7 @@ open FsharpMyExtension.Containers
 let (</>) x y = Path.Combine(x, y)
 
 let gamePath = "src" </> "game.twee"
+let achievementImagesPath = "assets" </> "images" </> "achievements"
 let newlineType = Twee.FSharp.NewlineType.Lf
 
 module ImageMagick =
@@ -225,13 +226,14 @@ module Achievements =
     ]
 
   let createAchievementDescriptions (achievements: Achievement list) =
-    let createField { Name = name; Description = description} =
+    let createField { Name = name; Description = description; ImageFilenameWithoutExt = imageFilenameWithoutExt} =
       [
         showQuotes (showString name) << showString ": {"
         yield!
           [
             showField (showString "name") (showQuotes (showString name))
             showField (showString "desc") (showQuotes (showString (Option.defaultValue "" description)))
+            showField (showString "imageStyle") (showQuotes (showString $"img-{imageFilenameWithoutExt}"))
           ]
           |> showBlock
         showString "},"
@@ -257,17 +259,11 @@ module Achievements =
         else
           { passage with
               Body =
-                passage.Body
-                |> List.collect (fun line ->
-                  if not <| line.Contains "// todo: добавить инициализацию достижений" then
-                    [line]
-                  else
-                    [
-                      yield! createDefaultAchievements achievements |> List.map show
-                      ""
-                      yield! createAchievementDescriptions achievements |> List.map show
-                    ]
-                )
+                [
+                  yield! createDefaultAchievements achievements |> List.map show
+                  ""
+                  yield! createAchievementDescriptions achievements |> List.map show
+                ]
           }
           |> Some
       )
@@ -319,19 +315,7 @@ module Achievements =
       Achievement.create "Псих"              "Псих(концовка)"               "5d2042c6-a526-40d2-9f8b-16ed9e620cf2" "549113060-5d2042c6-a526-40d2-9f8b-16ed9e620cf2" "Ты старался как мог, но обстоятельства были выше и сломали тебя."
     ]
 
-  // do
-  //   updateTwee (fun twee ->
-  //     addInit achievements twee
-  //   )
-  //   |> printfn "%A"
-
-  // do
-  //   updateTwee (addAllUseTags achievements)
-  //   |> printfn "%A"
-
-  let achievementImagesPath = "assets" </> "images" </> "achievements"
-  // ImageMagick.convertFolderToWebp false achievementImagesPath
-  do
+  let addAchievementImagesToStyle () =
     let appendStyleRuleToStylesheet (styleRule: ImageCssRule) (twee: Twee.FSharp.Document) =
       twee
       |> Twee.FSharp.Document.updatePassages (fun passage ->
@@ -369,6 +353,15 @@ module Achievements =
     )
     |> printfn "%A"
 
-    // ImageMagick.size (achievementImagesPath </> "549112925-287c9124-4b44-4048-8498-fe3cc527294d.webp")
-    // |> printfn "%A"
-    ()
+  do
+    updateTwee (fun twee ->
+      addInit achievements twee
+    )
+    |> printfn "%A"
+
+  // do
+  //   updateTwee (addAllUseTags achievements)
+  //   |> printfn "%A"
+
+  // ImageMagick.convertFolderToWebp false achievementImagesPath
+
