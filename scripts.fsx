@@ -230,7 +230,7 @@ module Achievements =
     ]
 
   let addInit achievements (twee: Twee.FSharp.Document) =
-    let storyInitName = "StoryInit"
+    let storyInitName = "AchievementsInit"
     twee
     |> Twee.FSharp.Document.updatePassages
       (fun passage ->
@@ -245,9 +245,9 @@ module Achievements =
                     [line]
                   else
                     [
-                      yield! createDefaultAchievements achievements |> showBlock |> List.map show
+                      yield! createDefaultAchievements achievements |> List.map show
                       ""
-                      yield! createAchievementDescriptions achievements |> showBlock |> List.map show
+                      yield! createAchievementDescriptions achievements |> List.map show
                     ]
                 )
           }
