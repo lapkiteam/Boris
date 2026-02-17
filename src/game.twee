@@ -16,6 +16,10 @@ boris
 }
 
 
+:: StoryAuthor
+<a href="https://github.com/lapkiteam" target="_blank" rel="noopener noreferrer">LapkiTeam</a>
+
+
 :: StoryCaption
 <<link "v1.0.0" "ReleaseNotes">><</link>>
 
