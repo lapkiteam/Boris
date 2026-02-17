@@ -16,6 +16,20 @@ boris
 }
 
 
+:: StoryCaption
+<<link "v1.0.0" "ReleaseNotes">><</link>>
+
+
+:: ReleaseNotes
+! Журнал изменений
+\
+!! 1.0.0
+\
+* Релиз на заявку
+\
+<<back "Назад">>
+
+
 :: StoryStylesheet [stylesheet]
 .float-right {
   float: right;
